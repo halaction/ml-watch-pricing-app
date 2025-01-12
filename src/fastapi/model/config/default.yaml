@@ -1,0 +1,22 @@
+target: price
+features:
+- brand
+- movement
+- condition
+- scope_of_delivery
+- water_resistance
+- face_area
+- case_material
+- bracelet_material
+- gender
+- shape
+- crystal
+- dial
+- bracelet_color
+- clasp
+- fast_shipper
+- trusted_seller
+- punctuality
+
+test_size: 0.2
+val_size: 0.1

@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from http import HTTPStatus
 
 from schemas import MessageResponse
@@ -11,9 +11,9 @@ from schemas import MessageResponse
 async def lifespan(app: FastAPI):
 
     # Startup events
-    ...
+    state = {"something": 123}
 
-    yield
+    yield state
 
     # Shutdown events
     ...
@@ -30,6 +30,15 @@ app = FastAPI(lifespan=lifespan)
 )
 async def root() -> MessageResponse:
     return {"message": "We are up!"}
+
+
+@app.get(
+    "/get_model",
+    status_code=HTTPStatus.OK,
+    response_model=MessageResponse,
+)
+async def get_model(request: Request, a: int) -> MessageResponse:
+    return {"message": f"as per {a} we got {request.state.something}"}
 
 
 if __name__ == "__main__":
