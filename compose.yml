@@ -1,0 +1,24 @@
+services:
+  fastapi:
+    build: src/fastapi/
+    container_name: fastapi
+    ports: 
+      - 8000:8000
+    networks:
+      - internal
+
+
+  streamlit:
+    build: src/streamlit/
+    container_name: streamlit
+    ports: 
+        - 8501:8501
+    networks:
+      - internal
+    depends_on:
+      - fastapi
+        
+
+networks:
+  internal:
+    driver: bridge
