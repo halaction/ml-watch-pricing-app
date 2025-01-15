@@ -3,7 +3,9 @@ features:
 - brand
 - movement
 - condition
-- scope_of_delivery
+# - scope_of_delivery
+- original_box
+- original_papers
 - water_resistance
 - face_area
 - case_material
@@ -17,6 +19,25 @@ features:
 - fast_shipper
 - trusted_seller
 - punctuality
+- availability
+- watches_sold_by_the_seller
+- active_listing_of_the_seller
+- seller_reviews
+- produced_before_1980
+- produced_before_1990
+- produced_before_2000
+- produced_before_2010
+- produced_before_2020
+- produced_in_2024
+- brand_count
+# - brand_popularity
+- brand_tier
+- brand_range
 
 test_size: 0.2
-val_size: 0.1
+min_brand_count: 100
+min_price: 0
+max_price: 1e6
+min_face_area: 300
+max_face_area: 2000
+n_brand_tiers: 4
