@@ -5,8 +5,8 @@ from pydantic import BaseModel, Field
 ModelType = Literal[
     "linear_regression",
     "decision_tree",
+    "random_forest",
     "gradient_boosting",
-    "k_neighbors",
 ]
 
 MetricType = Literal[

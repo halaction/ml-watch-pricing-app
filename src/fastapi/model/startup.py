@@ -99,7 +99,6 @@ def load_models(cfg):
         if not model_path.exists():
             model = get_model(model_type)
             model.fit(X_train, y_train)
-
             joblib.dump(model, model_path)
         else:
             model = joblib.load(model_path)
@@ -110,7 +109,6 @@ def load_models(cfg):
                 {"data_split": "train", **compute_metrics(model, X_train, y_train)},
                 {"data_split": "test", **compute_metrics(model, X_test, y_test)},
             ]
-
             metrics = pd.DataFrame(metrics)
             metrics.to_csv(metrics_path, index=False)
 

@@ -21,10 +21,7 @@ from sklearn.compose import (
 from sklearn.pipeline import Pipeline
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor, HistGradientBoostingRegressor
-from sklearn.neighbors import KNeighborsRegressor
-from sklearn.feature_selection import SelectKBest, mutual_info_regression
 from sklearn.inspection import permutation_importance, partial_dependence
-
 
 from model.paths import DATA_DIR, MODEL_DIR
 
@@ -32,8 +29,8 @@ from model.paths import DATA_DIR, MODEL_DIR
 SUPPORTED_MODELS = [
     "linear_regression",
     "decision_tree",
+    "random_forest",
     "gradient_boosting",
-    "k_neighbors",
 ]
 
 SUPPORTED_METRICS = [
@@ -44,7 +41,7 @@ SUPPORTED_METRICS = [
 ]
 
 MIN_PRICE = 0
-MAX_PRICE = 1e9
+MAX_PRICE = 1e6
 
 MIN_LOG_PRICE = None
 MAX_LOG_PRICE = np.log1p(MAX_PRICE)
@@ -72,8 +69,8 @@ def get_model(model_type) -> Pipeline:
     if model_type == "gradient_boosting":
         model = get_gradient_boosting_model()
 
-    if model_type == "k_neighbors":
-        model = get_k_neighbors_model()
+    if model_type == "random_forest":
+        model = get_random_forest_model()
 
     return model
 
@@ -124,7 +121,7 @@ def get_linear_regression_model():
     return pipeline
 
 
-def get_k_neighbors_model():
+def get_random_forest_model():
 
     # Combine transformers using ColumnTransformer
     transformer = ColumnTransformer(
@@ -139,8 +136,8 @@ def get_k_neighbors_model():
                 OneHotEncoder(
                     handle_unknown="ignore",
                     drop="first",
-                    min_frequency=50,
-                    max_categories=64,
+                    min_frequency=30,
+                    max_categories=255,
                 ),
                 make_column_selector(dtype_include="category"),
             ),
@@ -150,12 +147,15 @@ def get_k_neighbors_model():
     )
 
     # Create and train the model
-    regressor = KNeighborsRegressor(
-        n_neighbors=10,
-        weights="uniform",
-        algorithm="auto",
-        leaf_size=30,
-        metric="minkowski",
+    regressor = RandomForestRegressor(
+        n_estimators=100,
+        criterion="squared_error",
+        max_depth=None,
+        min_samples_leaf=25,
+        max_features=None,
+        n_jobs=-1,
+        random_state=0,
+        warm_start=True,
     )
 
     # Wrap target transformation
@@ -169,7 +169,6 @@ def get_k_neighbors_model():
     pipeline = Pipeline(
         steps=[
             ("transformer", transformer),
-            # ("feature_selection", SelectKBest(score_func=mutual_info_regression, k=50)),
             ("model", model),
         ]
     )

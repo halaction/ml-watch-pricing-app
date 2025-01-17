@@ -249,7 +249,6 @@ async def upload_data(file: UploadFile) -> MessageResponse:
             detail=f"Encountered error while reading CSV file: {str(e)}",
         )
 
-    raw_data.info()
     cfg = app.state.config
 
     try:
