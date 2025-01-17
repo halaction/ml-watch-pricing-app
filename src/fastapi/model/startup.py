@@ -3,7 +3,6 @@ import json
 import numpy as np
 import pandas as pd
 import joblib
-from tqdm import tqdm
 
 from model.paths import DATA_DIR, MODEL_DIR
 from model.data import (
@@ -90,7 +89,7 @@ def load_models(cfg):
     X_test = data_test[cfg.features]
     y_test = data_test[cfg.target]
 
-    for model_type in tqdm(SUPPORTED_MODELS):
+    for model_type in SUPPORTED_MODELS:
 
         model_dir = MODEL_DIR / model_type
         model_dir.mkdir(parents=True, exist_ok=True)

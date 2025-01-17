@@ -30,7 +30,7 @@ The app offers the following functionalities:
 
 ### Model Selection
 
-- Users can choose a model from a list of supported models via a radio button in the sidebar.
+- Users can choose a model from a list of supported models via a button in the sidebar.
 - The selected model is loaded for inference using a POST request to the backend API.
 - If no model is selected, the previously loaded model (if any) is unloaded.
 

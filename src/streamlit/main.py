@@ -1,16 +1,37 @@
+import time
+
 import streamlit as st
 import requests
 import pandas as pd
 import plotly.express as px
 
 
-# BASE_URL = "http://fastapi:8000"
-BASE_URL = "http://0.0.0.0:8000"
+BASE_URL = "http://fastapi:8000"
+# BASE_URL = "http://0.0.0.0:8000"
+
+
+def check_server():
+
+    try:
+        url = f"{BASE_URL}/get_status"
+        response = requests.get(url)
+        response.raise_for_status()
+    except Exception:
+        return False
+
+    return True
 
 
 def main():
 
     st.title("Watch Pricing")
+
+    while True:
+        if check_server():
+            break
+        else:
+            with st.spinner("Waiting for API..."):
+                time.sleep(5)
 
     with st.sidebar:
 
