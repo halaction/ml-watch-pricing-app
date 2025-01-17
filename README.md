@@ -83,3 +83,53 @@ The app interacts with a backend API using the `requests` library. The API is as
 
 - The app assumes the backend API is running and accessible at the specified URL.
 - The input data should be in a CSV format with the required columns for the selected model.
+
+## Models and Metrics
+
+This section describes the machine learning models and evaluation metrics used in the Watch Pricing project.
+
+### Models
+
+The project supports the following machine learning models for price prediction:
+
+#### Linear Regression
+
+- Uses a linear relationship between features and the target variable (price).
+- Employs `StandardScaler` for numerical features and `OneHotEncoder` for categorical features.
+- Applies a log transformation to the target variable before training using `TransformedTargetRegressor`.
+- Uses `Ridge` as the regression algorithm with specified hyperparameters.
+
+#### Decision Tree
+
+- Builds a tree-like structure to make predictions based on feature thresholds.
+- Uses `DecisionTreeRegressor` as the algorithm with specific hyperparameters.
+- Includes feature scaling or encoding steps.
+
+#### Random Forest
+
+- An ensemble method that averages predictions from multiple decision trees.
+- Uses `RandomForestRegressor` as the algorithm with specified hyperparameters.
+- Includes feature scaling or encoding steps.
+
+#### Gradient Boosting
+
+- Combines multiple weak learners (decision trees) to create a strong predictive model.
+- Employs `HistGradientBoostingRegressor` as the algorithm with defined hyperparameters.
+- Does not require separate feature scaling or encoding.
+
+### Metrics
+
+The project utilizes the following metrics for model evaluation:
+
+- **R-squared (R2)**: Measures the proportion of variance in the target variable explained by the model.
+- **Mean Squared Error (MSE)**: Calculates the average squared difference between predicted and actual values.
+- **Mean Absolute Error (MAE)**: Computes the average absolute difference between predicted and actual values.
+- **Mean Absolute Percentage Error (MAPE)**: Measures the average percentage difference between predicted and actual values.
+
+These metrics are used to assess the performance of the models on different data splits (training, validation, and inference).
+
+### Feature Engineering
+
+- **Standard Scaling:** Applied to numerical features to standardize their distribution.
+- **One-Hot Encoding:** Used to represent categorical features as numerical vectors.
+- **Log Transformation:** Applied to the target variable (price) to handle potential skewness and improve model performance.
