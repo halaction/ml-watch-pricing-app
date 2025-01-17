@@ -8,28 +8,12 @@ import pandas as pd
 from omegaconf import DictConfig
 from sklearn.model_selection import train_test_split
 
-from model.paths import CACHE_DIR
-
-
-def load_data(cfg):
-
-    print("started loading data")
-
-    raw_data = get_raw_data(cfg)
-
-    data = preprocess(cfg, raw_data)
-    data_train, data_test = split(cfg, data)
-    data_train, data_test = transform(cfg, data_train, data_test)
-
-    data_train.to_pickle(CACHE_DIR / "data-train.pkl")
-    data_test.to_pickle(CACHE_DIR / "data-test.pkl")
-
-    print("finished loading data")
+from model.paths import DATA_DIR
 
 
 def get_raw_data(cfg: DictConfig) -> pd.DataFrame:
 
-    path = CACHE_DIR / "watches (cleaned).csv"
+    path = DATA_DIR / "watches (cleaned).csv"
 
     if not path.exists():
 
@@ -38,7 +22,7 @@ def get_raw_data(cfg: DictConfig) -> pd.DataFrame:
         response.raise_for_status()
 
         with ZipFile(BytesIO(response.content)) as file:
-            file.extractall(CACHE_DIR)
+            file.extractall(DATA_DIR)
 
     raw_data = pd.read_csv(path)
 
@@ -49,69 +33,27 @@ def preprocess(cfg: DictConfig, raw_data: pd.DataFrame) -> pd.DataFrame:
 
     data = raw_data.copy()
 
-    print(f"{len(data)=}")
-
+    # Rename columns
     columns = {column: snake_case(column) for column in data.columns}
     data = data.rename(columns=columns)
 
-    float_columns = [
-        "price",
-        "water_resistance",
-        "face_area",
-        "watches_sold_by_the_seller",
-        "active_listing_of_the_seller",
-        "seller_reviews",
-        "year_of_production",
-    ]
-    categorical_columns = [
-        "brand",
-        "movement",
-        "case_material",
-        "bracelet_material",
-        "condition",
-        "scope_of_delivery",
-        "gender",
-        "availability",
-        "shape",
-        "crystal",
-        "dial",
-        "bracelet_color",
-        "clasp",
-    ]
-    boolean_columns = [
-        "fast_shipper",
-        "trusted_seller",
-        "punctuality",
-    ]
-
-    input_columns = float_columns + categorical_columns + boolean_columns
+    # Check required columns
+    input_columns = (
+        cfg.numerical_columns + cfg.categorical_columns + cfg.boolean_columns
+    )
 
     for column in input_columns:
         assert column in data.columns, f"{column} not in data"
 
     data = data[input_columns]
 
-    dtypes = {
-        **{column: float for column in float_columns},
-        **{column: "category" for column in categorical_columns},
-        **{column: bool for column in boolean_columns},
-    }
-    data = data.astype(dtypes)
+    # Cast to specified dtypes
+    data = data.astype({column: np.float64 for column in cfg.numerical_columns})
+    data = data.astype({column: "category" for column in cfg.categorical_columns})
+    data = data.astype({column: bool for column in cfg.boolean_columns})
 
-    optional_columns = [
-        "movement",
-        "case_material",
-        "bracelet_material",
-        "gender",
-        "shape",
-        "crystal",
-        "dial",
-        "bracelet_color",
-        "clasp",
-        "availability",
-    ]
-
-    for column in categorical_columns:
+    # Fill missing values
+    for column in cfg.categorical_columns:
         data[column] = (
             data[column]
             .cat.add_categories(["Undefined", "Infrequent"])
@@ -128,6 +70,7 @@ def preprocess(cfg: DictConfig, raw_data: pd.DataFrame) -> pd.DataFrame:
         }
     )
 
+    # Add features
     decades = [1980, 1990, 2000, 2010, 2020]
     for decade in decades:
         data[f"produced_before_{decade}"] = np.where(
@@ -157,16 +100,24 @@ def preprocess(cfg: DictConfig, raw_data: pd.DataFrame) -> pd.DataFrame:
         ]
     )
 
-    # data["face_area"] = np.clip(data["face_area"], cfg.min_face_area, cfg.max_face_area)
-    data = data[data["face_area"].between(cfg.min_face_area, cfg.max_face_area)]
-    data = data[data["price"].between(cfg.min_price, cfg.max_price)]
-
     data = data.dropna()
     data = data.drop_duplicates()
 
-    print(f"{len(data)=}")
+    return data
+
+
+def enforce_constraints(cfg, data):
+
+    data = data[data["face_area"].between(cfg.min_face_area, cfg.max_face_area)]
+    data = data[data["price"].between(cfg.min_price, cfg.max_price)]
 
     return data
+
+
+def check_constraints(cfg, data):
+
+    assert data["face_area"].between(cfg.min_face_area, cfg.max_face_area).all()
+    assert data["price"].between(cfg.min_price, cfg.max_price).all()
 
 
 def snake_case(text: str) -> str:
@@ -182,6 +133,7 @@ def split(cfg: DictConfig, data: pd.DataFrame) -> tuple[pd.DataFrame]:
     data_train, data_test = train_test_split(
         data,
         test_size=cfg.test_size,
+        # stratify=data["brand"],
         shuffle=True,
         random_state=0,
     )
@@ -189,7 +141,7 @@ def split(cfg: DictConfig, data: pd.DataFrame) -> tuple[pd.DataFrame]:
     return data_train, data_test
 
 
-def transform(
+def fit_transform(
     cfg: DictConfig,
     data_train: pd.DataFrame,
     data_test: pd.DataFrame,
@@ -203,30 +155,28 @@ def transform(
         count=pd.NamedAgg(column="price", aggfunc="count"),
     )
 
-    # brands_count = brands["count"]
-    # brands["popularity"] = (brands_count - brands_count.min()) / (
-    #     brands_count.max() - brands_count.min()
-    # )
-
     brands["tier"] = None
-    brands_price = brands["price_median"]
-    quantiles = np.quantile(
-        brands_price,
-        q=np.linspace(0, 1, cfg.n_brand_tiers + 1),
-    )
+    brand_prices = brands["price_median"]
+
+    num = cfg.n_brand_tiers + 1
+    q = np.linspace(0, 1, num=num)
+    quantiles = np.quantile(brand_prices, q=q)
+
     for i in range(cfg.n_brand_tiers):
-        brands.loc[brands_price.between(quantiles[i], quantiles[i + 1]), "tier"] = i
+        brands.loc[brand_prices.between(quantiles[i], quantiles[i + 1]), "tier"] = i
 
     brands["range"] = brands["price_max"] / brands["price_min"]
 
-    infrequent_brands = brands[brands["count"] < cfg.min_brand_count].index.tolist()
+    brands_path = DATA_DIR / "brands.csv"
+    brands.to_csv(brands_path, index=True)
 
     # Transform stage
+    valid_brands = brands.index
+    data_train = data_train[data_train["brand"].isin(valid_brands)]
+    data_test = data_test[data_test["brand"].isin(valid_brands)]
+
     data_train["brand_count"] = data_train["brand"].map(brands["count"])
     data_test["brand_count"] = data_test["brand"].map(brands["count"])
-
-    # data_train["brand_popularity"] = data_train["brand"].map(brands["popularity"])
-    # data_test["brand_popularity"] = data_test["brand"].map(brands["popularity"])
 
     data_train["brand_tier"] = data_train["brand"].map(brands["tier"])
     data_test["brand_tier"] = data_test["brand"].map(brands["tier"])
@@ -234,11 +184,30 @@ def transform(
     data_train["brand_range"] = data_train["brand"].map(brands["range"])
     data_test["brand_range"] = data_test["brand"].map(brands["range"])
 
-    print(f"{len(data_train['brand'].unique())=}")
-
+    infrequent_brands = brands[brands["count"] < cfg.min_brand_count].index
     data_train.loc[data_train["brand"].isin(infrequent_brands), "brand"] = "Infrequent"
     data_test.loc[data_test["brand"].isin(infrequent_brands), "brand"] = "Infrequent"
 
-    print(f"{len(data_train['brand'].unique())=}")
-
     return data_train, data_test
+
+
+def transform(
+    cfg: DictConfig,
+    data: pd.DataFrame,
+) -> pd.DataFrame:
+
+    brands_path = DATA_DIR / "brands.csv"
+    brands = pd.read_csv(brands_path).set_index("brand")
+
+    # Transform stage
+    valid_brands = brands.index
+    data = data[data["brand"].isin(valid_brands)]
+
+    data["brand_count"] = data["brand"].map(brands["count"])
+    data["brand_tier"] = data["brand"].map(brands["tier"])
+    data["brand_range"] = data["brand"].map(brands["range"])
+
+    infrequent_brands = brands[brands["count"] < cfg.min_brand_count].index
+    data.loc[data["brand"].isin(infrequent_brands), "brand"] = "Infrequent"
+
+    return data

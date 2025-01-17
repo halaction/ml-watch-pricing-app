@@ -6,3 +6,6 @@ BASE_DIR = MODULE_DIR.parent
 
 CACHE_DIR = BASE_DIR / ".cache"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+DATA_DIR = CACHE_DIR / "data"
+MODEL_DIR = CACHE_DIR / "model"

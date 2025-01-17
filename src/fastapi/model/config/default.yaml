@@ -1,16 +1,54 @@
-target: price
-features:
-- brand
-- movement
-- condition
-# - scope_of_delivery
-- original_box
-- original_papers
+test_size: 0.25
+min_brand_count: 100
+min_price: 0
+max_price: 1e6
+min_face_area: 300
+max_face_area: 2000
+n_brand_tiers: 4
+
+numerical_columns:
+- price
 - water_resistance
 - face_area
+- watches_sold_by_the_seller
+- active_listing_of_the_seller
+- seller_reviews
+- year_of_production
+
+categorical_columns: 
+- brand
+- movement
 - case_material
 - bracelet_material
+- condition
+- scope_of_delivery
 - gender
+- availability
+- shape
+- crystal
+- dial
+- bracelet_color
+- clasp
+
+boolean_columns: 
+- fast_shipper
+- trusted_seller
+- punctuality
+
+target: price
+features:
+- water_resistance
+- face_area
+- watches_sold_by_the_seller
+- active_listing_of_the_seller
+- seller_reviews
+- brand
+- movement
+- case_material
+- bracelet_material
+- condition
+- gender
+- availability
 - shape
 - crystal
 - dial
@@ -19,25 +57,14 @@ features:
 - fast_shipper
 - trusted_seller
 - punctuality
-- availability
-- watches_sold_by_the_seller
-- active_listing_of_the_seller
-- seller_reviews
+- original_box
+- original_papers
+- brand_count
+- brand_tier
+- brand_range
 - produced_before_1980
 - produced_before_1990
 - produced_before_2000
 - produced_before_2010
 - produced_before_2020
 - produced_in_2024
-- brand_count
-# - brand_popularity
-- brand_tier
-- brand_range
-
-test_size: 0.2
-min_brand_count: 100
-min_price: 0
-max_price: 1e6
-min_face_area: 300
-max_face_area: 2000
-n_brand_tiers: 4
