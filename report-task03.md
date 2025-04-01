@@ -160,7 +160,7 @@ Balance: [0.55555556 0.44444444] [1.]
 - Computationally expensive (one fold for each sample), only viable for tiny datasets.
 
 
-## 5. Conclusions
+## Conclusions
 - **K-Fold** is a general-purpose choice for balanced data. 
 - **Stratified K-Fold** is optimal for imbalanced datasets.  
 - **Leave-one-out** is best for small datasets but computationally prohibitive.  
