@@ -1,13 +1,13 @@
 # Task 4. Hyperparameter Optimization
 
-## 1. Introduction
+## Introduction
 This report compares two hyperparameter optimization methods for a `DecisionTreeRegressor`:  
 1. **Grid Search** 
 2. **Tree-structured Parzen Estimator (TPE)**
 
-## 2. Implemented Methods
+## Implemented Methods
 
-### 2.1 Grid Search
+### Grid Search
 **Approach**: Evaluates all combinations of predefined hyperparameter values.  
 **Code**:
 ```python fast-track copy 3.ipynb
@@ -21,7 +21,7 @@ params = {
 optimize_grid(cfg, model, params, data_train, n_jobs=1, verbose=5)
 ```
 
-### 2.2 TPE (Optuna)
+### TPE (Optuna)
 **Approach**: Uses Bayesian optimization to explore parameter space efficiently.  
 **Code**:
 ```python fast-track copy 3.ipynb
@@ -35,7 +35,7 @@ params = {
 optimize_tpe(cfg, model, params, data_train, n_trials=100, timeout=300, n_jobs=1)
 ```
 
-## 5. Conclusions
+## Conclusions
 1. **TPE is faster and more efficient** for large parameter spaces.  
 2. **Grid Search guarantees reproducibility** but is computationally expensive.  
 3. **Model sensitivity**:  
