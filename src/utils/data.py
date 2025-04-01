@@ -2,13 +2,32 @@ import re
 import requests
 from zipfile import ZipFile
 from io import BytesIO
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from hydra import compose, initialize
 from omegaconf import DictConfig
 from sklearn.model_selection import train_test_split
 
-from paths import DATA_DIR
+
+SOURCE_DIR = Path(__file__).absolute().parent
+DATA_DIR = SOURCE_DIR / "data"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def get_config(
+    config_name: str = "default",
+    overrides: list | None = None,
+) -> DictConfig:
+
+    if overrides is None:
+        overrides = []
+
+    with initialize(version_base=None, config_path="."):
+        config = compose(config_name=config_name, overrides=overrides)
+
+    return config
 
 
 def get_raw_data(cfg: DictConfig) -> pd.DataFrame:
@@ -114,12 +133,6 @@ def enforce_constraints(cfg, data):
     return data
 
 
-def check_constraints(cfg, data):
-
-    assert data["face_area"].between(cfg.min_face_area, cfg.max_face_area).all()
-    assert data["price"].between(cfg.min_price, cfg.max_price).all()
-
-
 def snake_case(text: str) -> str:
 
     text = text.replace(" ", "_").lower()
@@ -167,7 +180,7 @@ def fit_transform(
 
     brands["range"] = brands["price_max"] / brands["price_min"]
 
-    brands_path = DATA_DIR / "brands.csv"
+    brands_path = "brands.csv"
     brands.to_csv(brands_path, index=True)
 
     # Transform stage
@@ -196,7 +209,7 @@ def transform(
     data: pd.DataFrame,
 ) -> pd.DataFrame:
 
-    brands_path = DATA_DIR / "brands.csv"
+    brands_path = "brands.csv"
     brands = pd.read_csv(brands_path).set_index("brand")
 
     # Transform stage

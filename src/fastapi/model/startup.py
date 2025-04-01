@@ -4,7 +4,8 @@ import numpy as np
 import pandas as pd
 import joblib
 
-from model.paths import DATA_DIR, MODEL_DIR
+from paths import DATA_DIR, MODEL_DIR
+from logger import logger
 from model.data import (
     get_raw_data,
     preprocess,
@@ -30,6 +31,8 @@ async def startup(cfg):
 
 
 def load_data(cfg):
+
+    logger.debug("Started loading data")
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -77,6 +80,8 @@ def load_data(cfg):
 
 
 def load_models(cfg):
+
+    logger.debug("Started loading models")
 
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
 

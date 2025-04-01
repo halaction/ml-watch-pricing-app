@@ -1,0 +1,7 @@
+kaggle
+omegaconf
+numpy
+pandas
+scikit-learn
+hydra-core
+optuna

@@ -1,6 +1,6 @@
 services:
   fastapi:
-    build: src/fastapi/
+    build: fastapi/
     container_name: fastapi
     ports: 
       - 8000:8000
@@ -9,7 +9,7 @@ services:
 
 
   streamlit:
-    build: src/streamlit/
+    build: streamlit/
     container_name: streamlit
     ports: 
         - 8501:8501

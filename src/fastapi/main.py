@@ -22,7 +22,7 @@ from schemas import (
     ComputeMetricRequest,
     ComputeMetricResponse,
 )
-from model.paths import DATA_DIR, MODEL_DIR
+from paths import DATA_DIR, MODEL_DIR
 from model.config import get_config
 from model.data import preprocess, check_constraints, transform
 from model.model import compute_metrics, SUPPORTED_MODELS, SUPPORTED_METRICS
@@ -32,7 +32,6 @@ from model.startup import startup
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
-    # Startup events
     cfg = get_config()
 
     await startup(cfg)
@@ -47,8 +46,7 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    # Shutdown events
-    ...
+    pass
 
 
 app = FastAPI(lifespan=lifespan)

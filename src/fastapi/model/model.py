@@ -23,7 +23,7 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor, HistGradientBoostingRegressor
 from sklearn.inspection import permutation_importance, partial_dependence
 
-from model.paths import DATA_DIR, MODEL_DIR
+from paths import DATA_DIR, MODEL_DIR
 
 
 SUPPORTED_MODELS = [
